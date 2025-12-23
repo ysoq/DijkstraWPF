@@ -6,94 +6,267 @@
     xmlns:local="clr-namespace:DijkstraWPF"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="地图导航 - Dijkstra算法"
-    Width="900"
-    Height="600"
+    Width="1000"
+    Height="700"
+    Background="#F0F0F0"
     mc:Ignorable="d">
+    <Window.Resources>
+        <!--  阴影效果资源  -->
+        <DropShadowEffect
+            x:Key="ShadowEffect"
+            BlurRadius="5"
+            Direction="270"
+            Opacity="0.3"
+            ShadowDepth="3" />
+    </Window.Resources>
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <!--  控制面板  -->
-        <StackPanel
-            Grid.Row="0"
-            Margin="10"
-            Orientation="Horizontal">
-            <Button
-                x:Name="btnClear"
-                Width="60"
-                Margin="0,0,10,0"
-                Click="btnClear_Click"
-                Content="清除" />
-            <Button
-                x:Name="btnReset"
-                Width="60"
-                Click="btnReset_Click"
-                Content="重置" />
-            <Button
-                x:Name="btnTemp"
-                Width="60"
-                Margin="20,0,0,0"
-                Click="btnTemp_Click"
-                Content="绘制临时点位" />
-            <Button
-                Width="60"
-                Margin="20,0,0,0"
-                Click="btnSort_Click"
-                Content="获取最短路线" />
+        <!--  标题栏  -->
+        <Border
+            Height="60"
+            Background="#2C3E50"
+            BorderBrush="#34495E"
+            BorderThickness="0,0,0,2">
             <TextBlock
-                x:Name="txtStatus"
-                Margin="20,0,0,0"
+                HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                FontWeight="Bold" />
-        </StackPanel>
+                FontFamily="Segoe UI"
+                FontSize="24"
+                FontWeight="Bold"
+                Foreground="White"
+                Text="地图导航系统 - Dijkstra最短路径算法" />
+        </Border>
+        
+        <Grid
+            Margin="0,60,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-        <!--  画布  -->
-        <Canvas
-            x:Name="canvas"
-            Grid.Row="1"
-            Background="LightGray"
-            MouseLeftButtonDown="canvas_MouseLeftButtonDown">
-            <Canvas.Resources>
-                <!--  样式定义  -->
-                <Style x:Key="RoadLine" TargetType="Line">
-                    <Setter Property="Stroke" Value="DarkGray" />
-                    <Setter Property="StrokeThickness" Value="3" />
-                </Style>
-                <Style x:Key="PathLine" TargetType="Line">
-                    <Setter Property="Stroke" Value="Red" />
-                    <Setter Property="StrokeThickness" Value="4" />
-                    <Setter Property="StrokeDashArray" Value="5,2" />
-                </Style>
-                <Style x:Key="PointStyle" TargetType="Ellipse">
-                    <Setter Property="Width" Value="8" />
-                    <Setter Property="Height" Value="8" />
-                    <Setter Property="Fill" Value="Blue" />
-                </Style>
-                <Style
-                    x:Key="StartPointStyle"
-                    BasedOn="{StaticResource PointStyle}"
-                    TargetType="Ellipse">
-                    <Setter Property="Fill" Value="Green" />
-                    <Setter Property="Width" Value="12" />
-                    <Setter Property="Height" Value="12" />
-                </Style>
-                <Style
-                    x:Key="EndPointStyle"
-                    BasedOn="{StaticResource PointStyle}"
-                    TargetType="Ellipse">
-                    <Setter Property="Fill" Value="Red" />
-                    <Setter Property="Width" Value="12" />
-                    <Setter Property="Height" Value="12" />
-                </Style>
-                <Style
-                    x:Key="ConnectionPointStyle"
-                    BasedOn="{StaticResource PointStyle}"
-                    TargetType="Ellipse">
-                    <Setter Property="Fill" Value="Orange" />
-                </Style>
-            </Canvas.Resources>
-        </Canvas>
+            <!--  控制面板  -->
+            <Border
+                Grid.Row="0"
+                Margin="10,10,10,5"
+                Background="White"
+                BorderBrush="#BDC3C7"
+                BorderThickness="1"
+                CornerRadius="5"
+                Effect="{StaticResource ShadowEffect}">
+                <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
+                <!--  基础操作按钮组  -->
+                <StackPanel
+                    Grid.Column="0"
+                    Grid.Row="0"
+                    Margin="10"
+                    Orientation="Horizontal">
+                    <Button
+                        x:Name="btnClear"
+                        Width="70"
+                        Height="35"
+                        Margin="0,0,10,0"
+                        Click="btnClear_Click"
+                        Background="#3498DB"
+                        BorderBrush="#2980B9"
+                        Content="清除"
+                        FontFamily="Segoe UI"
+                        FontSize="14"
+                        Foreground="White"
+                        Padding="5">
+                        <Button.Effect>
+                            <DropShadowEffect
+                                BlurRadius="3"
+                                Direction="270"
+                                Opacity="0.3"
+                                ShadowDepth="2" />
+                        </Button.Effect>
+                    </Button>
+                    <Button
+                        x:Name="btnReset"
+                        Width="70"
+                        Height="35"
+                        Click="btnReset_Click"
+                        Background="#E67E22"
+                        BorderBrush="#D35400"
+                        Content="重置"
+                        FontFamily="Segoe UI"
+                        FontSize="14"
+                        Foreground="White"
+                        Padding="5">
+                        <Button.Effect>
+                            <DropShadowEffect
+                                BlurRadius="3"
+                                Direction="270"
+                                Opacity="0.3"
+                                ShadowDepth="2" />
+                        </Button.Effect>
+                    </Button>
+                </StackPanel>
+                
+                <!--  分隔线  -->
+                <Border
+                    Grid.Column="2"
+                    Grid.Row="0"
+                    Width="1"
+                    Height="35"
+                    Margin="10,10,10,10"
+                    Background="#BDC3C7" />
+                
+                <!--  路径操作按钮组  -->
+                <StackPanel
+                    Grid.Column="3"
+                    Grid.Row="0"
+                    Margin="10"
+                    Orientation="Horizontal">
+                    <Button
+                        x:Name="btnTemp"
+                        Width="100"
+                        Height="35"
+                        Margin="0,0,10,0"
+                        Click="btnTemp_Click"
+                        Background="#9B59B6"
+                        BorderBrush="#8E44AD"
+                        Content="添加临时点"
+                        FontFamily="Segoe UI"
+                        FontSize="14"
+                        Foreground="White"
+                        Padding="5">
+                        <Button.Effect>
+                            <DropShadowEffect
+                                BlurRadius="3"
+                                Direction="270"
+                                Opacity="0.3"
+                                ShadowDepth="2" />
+                        </Button.Effect>
+                    </Button>
+                    <Button
+                        Width="100"
+                        Height="35"
+                        Click="btnSort_Click"
+                        Background="#27AE60"
+                        BorderBrush="#229954"
+                        Content="查找最短路径"
+                        FontFamily="Segoe UI"
+                        FontSize="14"
+                        Foreground="White"
+                        Padding="5">
+                        <Button.Effect>
+                            <DropShadowEffect
+                                BlurRadius="3"
+                                Direction="270"
+                                Opacity="0.3"
+                                ShadowDepth="2" />
+                        </Button.Effect>
+                    </Button>
+                </StackPanel>
+                
+                <!--  状态提示  -->
+                <TextBlock
+                    x:Name="txtStatus"
+                    Grid.Column="6"
+                    Grid.Row="0"
+                    Margin="0,0,20,0"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    FontFamily="Segoe UI"
+                    FontSize="14"
+                    FontWeight="Bold"
+                    Foreground="#2C3E50" />
+                </Grid>
+            </Border>
+
+            <!--  画布容器  -->
+            <Border
+                Grid.Row="1"
+                Margin="10,5,10,5"
+                Background="White"
+                BorderBrush="#BDC3C7"
+                BorderThickness="1"
+                CornerRadius="5"
+                Effect="{StaticResource ShadowEffect}">
+                <!--  画布  -->
+                <Canvas
+                    x:Name="canvas"
+                    Background="#ECF0F1"
+                    MouseLeftButtonDown="canvas_MouseLeftButtonDown">
+                    <Canvas.Resources>
+                        <!--  样式定义  -->
+                        <Style x:Key="RoadLine" TargetType="Line">
+                            <Setter Property="Stroke" Value="#7F8C8D" />
+                            <Setter Property="StrokeThickness" Value="3" />
+                        </Style>
+                        <Style x:Key="PathLine" TargetType="Line">
+                            <Setter Property="Stroke" Value="#E74C3C" />
+                            <Setter Property="StrokeThickness" Value="4" />
+                            <Setter Property="StrokeDashArray" Value="5,2" />
+                            <Setter Property="StrokeStartLineCap" Value="Round" />
+                            <Setter Property="StrokeEndLineCap" Value="Round" />
+                        </Style>
+                        <Style x:Key="PointStyle" TargetType="Ellipse">
+                            <Setter Property="Width" Value="8" />
+                            <Setter Property="Height" Value="8" />
+                            <Setter Property="Fill" Value="#3498DB" />
+                            <Setter Property="Stroke" Value="White" />
+                            <Setter Property="StrokeThickness" Value="1" />
+                        </Style>
+                        <Style
+                            x:Key="StartPointStyle"
+                            BasedOn="{StaticResource PointStyle}"
+                            TargetType="Ellipse">
+                            <Setter Property="Fill" Value="#27AE60" />
+                            <Setter Property="Width" Value="14" />
+                            <Setter Property="Height" Value="14" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </Style>
+                        <Style
+                            x:Key="EndPointStyle"
+                            BasedOn="{StaticResource PointStyle}"
+                            TargetType="Ellipse">
+                            <Setter Property="Fill" Value="#E74C3C" />
+                            <Setter Property="Width" Value="14" />
+                            <Setter Property="Height" Value="14" />
+                            <Setter Property="StrokeThickness" Value="2" />
+                        </Style>
+                        <Style
+                            x:Key="ConnectionPointStyle"
+                            BasedOn="{StaticResource PointStyle}"
+                            TargetType="Ellipse">
+                            <Setter Property="Fill" Value="#F39C12" />
+                            <Setter Property="Width" Value="10" />
+                            <Setter Property="Height" Value="10" />
+                        </Style>
+                    </Canvas.Resources>
+                </Canvas>
+            </Border>
+            
+            <!--  底部说明  -->
+            <Border
+                Grid.Row="2"
+                Margin="10,5,10,10"
+                Background="#ECF0F1"
+                BorderBrush="#BDC3C7"
+                BorderThickness="1"
+                CornerRadius="5">
+                <TextBlock
+                    Margin="15,10,15,10"
+                    FontFamily="Segoe UI"
+                    FontSize="12"
+                    Foreground="#7F8C8D"
+                    Text="操作说明：1. 点击地图选择起点  2. 点击地图选择终点  3. 点击'查找最短路径'按钮查看结果  4. 使用'添加临时点'优化路径  5. 使用'清除'或'重置'重新开始" />
+            </Border>
+        </Grid>
     </Grid>
 </Window>

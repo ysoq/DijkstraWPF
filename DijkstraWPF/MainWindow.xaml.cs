@@ -160,11 +160,11 @@ public partial class MainWindow : Window
     {
         if (_isSelectingStart)
         {
-            txtStatus.Text = "请点击选择起点...";
+            txtStatus.Text = "请点击地图选择起点...";
         }
         else
         {
-            txtStatus.Text = "请点击选择终点...";
+            txtStatus.Text = "请点击地图选择终点...";
         }
     }
 
