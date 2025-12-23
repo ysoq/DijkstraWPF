@@ -345,7 +345,7 @@ namespace DijkstraWPF
     // 图构建器
     public class GraphBuilder
     {
-        private readonly Graph<int, string> graph;
+        private Graph<int, string> graph;
         private Dictionary<int, uint> nodeIds = new Dictionary<int, uint> ();
         private Dictionary<uint, Point> idByNode = new Dictionary<uint, Point> ();
         public GraphBuilder()
@@ -354,30 +354,48 @@ namespace DijkstraWPF
         }
         public void Set(List<LineSegment> lines)
         {
+            // 重新创建图对象来清空现有数据
+            graph = new Graph<int, string>();
+            nodeIds.Clear();
+            idByNode.Clear();
+            
+            // 添加所有节点
             foreach (var item in lines)
             {
                 AddNode(item.Start);
                 AddNode(item.End);
             }
 
+            // 为每条线段添加双向连接
             foreach (var line in lines)
             {
-                var endList = lines.Where(x=> x.Start.Equals(line.End));
-                graph.Connect(GetNodeId(line.Start), GetNodeId(line.End), line.Length, "");
-
-                foreach (var item in endList)
-                {
-                    graph.Connect(GetNodeId(line.End), GetNodeId(item.Start), item.Length, ""); 
-                }
+                uint startId = GetNodeId(line.Start);
+                uint endId = GetNodeId(line.End);
+                
+                // 添加双向边
+                graph.Connect(startId, endId, line.Length, "");
+                graph.Connect(endId, startId, line.Length, "");
             }
         }
 
         public List<Point> FindShortestPath(Point start, Point end)
         {
+            // 检查起始点和终点是否在图中
+            if (!nodeIds.ContainsKey(start.GetHashCode()) || !nodeIds.ContainsKey(end.GetHashCode()))
+            {
+                return new List<Point>();
+            }
+            
             var startId = GetNodeId(start);
             var endId = GetNodeId(end);
             ShortestPathResult result = graph.Dijkstra(startId, endId);
 
+            // 检查是否找到路径
+            if (!result.IsFounded)
+            {
+                return new List<Point>();
+            }
+            
             IEnumerable<uint> path = result.GetPath();
             return path.Select(x => idByNode[x]).ToList();
         }

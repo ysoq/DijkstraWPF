@@ -58,6 +58,10 @@ public partial class MainWindow : Window
         var result1 = GetLines();
 
         _lines = result1;
+        
+        // 初始化图构建器
+        _planner = new GraphBuilder();
+        _planner.Set(_lines);
     }
 
     private void DrawMap()
@@ -205,22 +209,63 @@ public partial class MainWindow : Window
 
     private void btnTemp_Click(object sender, RoutedEventArgs e)
     {
-        var lines = GetLines();
-        _planner = new GraphBuilder();
-
-        var startTempLins = _planner.AddTemporaryPoint(lines, _startPoint.Value);
-        var endTempLins = _planner.AddTemporaryPoint(lines, _endPoint.Value);
-        var startEndLines = startTempLins.Concat(endTempLins);
-        var ids = startEndLines.Select(x => x.Id);
-        _lines = lines.Where(x=> !ids.Contains(x.Id)).Concat(startEndLines).ToList();
-
+        // 检查起点和终点是否已选择
+        if (!_startPoint.HasValue || !_endPoint.HasValue)
+        {
+            txtStatus.Text = "请先选择起点和终点！";
+            return;
+        }
+        
+        // 创建新的图构建器
+        var tempPlanner = new GraphBuilder();
+        
+        // 添加起点的临时点
+        var startTempLines = tempPlanner.AddTemporaryPoint(_lines, _startPoint.Value);
+        // 添加终点的临时点
+        var endTempLines = tempPlanner.AddTemporaryPoint(_lines, _endPoint.Value);
+        
+        if (startTempLines == null || endTempLines == null)
+        {
+            txtStatus.Text = "无法添加临时点！";
+            return;
+        }
+        
+        // 获取需要替换的线段ID
+        var idsToRemove = startTempLines.Select(x => x.Id).Concat(endTempLines.Select(x => x.Id)).ToList();
+        
+        // 更新线路列表
+        _lines = _lines.Where(x => !idsToRemove.Contains(x.Id)).ToList();
+        _lines.AddRange(startTempLines);
+        _lines.AddRange(endTempLines);
+        
+        // 更新图构建器
+        if (_planner == null)
+        {
+            _planner = new GraphBuilder();
+        }
         _planner.Set(_lines);
-
+        
+        // 重新绘制地图
         DrawMap();
+        txtStatus.Text = "临时点已添加，地图已更新！";
     }
 
     private void btnSort_Click(object sender, RoutedEventArgs e)
     {
+        // 检查起点和终点是否已选择
+        if (!_startPoint.HasValue || !_endPoint.HasValue)
+        {
+            txtStatus.Text = "请先选择起点和终点！";
+            return;
+        }
+        
+        // 检查_planner是否已初始化
+        if (_planner == null)
+        {
+            txtStatus.Text = "系统错误：路径规划器未初始化！";
+            return;
+        }
+        
         // 清除之前的路径
         ClearPath();
 
@@ -231,21 +276,11 @@ public partial class MainWindow : Window
         {
             // 绘制路径
             DrawPath(paths);
-
-            // 绘制连接点
-            foreach (var connPoint in paths)
-            {
-                var connMarker = new Ellipse
-                {
-                    Width = 10,
-                    Height = 10
-                };
-                connMarker.Style = (Style)canvas.Resources["ConnectionPointStyle"];
-                Canvas.SetLeft(connMarker, connPoint.X - connMarker.Width / 2);
-                Canvas.SetTop(connMarker, connPoint.Y - connMarker.Height / 2);
-                canvas.Children.Add(connMarker);
-                _pathElements.Add(connMarker);
-            }
+            txtStatus.Text = $"最短路径已找到，包含 {paths.Count} 个点！";
+        }
+        else
+        {
+            txtStatus.Text = "无法找到从起点到终点的路径！";
         }
     }
 }
